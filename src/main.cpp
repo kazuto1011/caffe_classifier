@@ -26,14 +26,12 @@ bool initLabels(vector<string> &labels) {
 }
 
 int main(int argc, char **argv) {
-    ros::init(argc, argv, "caffe_classifier");
-
 #ifdef CPU_ONLY
     	std::cout<<"CPU_ONLY" << std::endl;
         caffe::Caffe::set_mode(caffe::Caffe::CPU);
 #endif
+    ros::init(argc, argv, "caffe_classifier");
 
-    /* Load labels. */
     vector<string> synsets;
     initLabels(synsets);
 

@@ -13,18 +13,10 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 find_package(OpenCV REQUIRED)
-find_package(CUDA REQUIRED)
+find_package(CUDA QUIET)
 
 set(Caffe_INCLUDE_DIRS ~/caffe/distribute/include)
 set(Caffe_LIBS ~/caffe/build/lib)
-set(Test_INCLUDE_DIRS ~/catkin_ws/devel/include) #for IDEs
-
-## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
 
 add_service_files(
   FILES
@@ -46,7 +38,6 @@ catkin_package(
 
 include_directories(
   include
-  #${Test_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${Caffe_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}

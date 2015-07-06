@@ -36,7 +36,7 @@ bool Classifier::Classify(caffe_classifier::classify::Request &req,
     caffe_net_->ForwardPrefilled(&loss);
     ROS_INFO_STREAM("loss: " << loss);
 
-    prob_.reset(caffe_net_->output_blobs()[0]);
+    prob_ = caffe_net_->blob_by_name("prob");
 
     float max_value = 0;
     int max_index = 0;
