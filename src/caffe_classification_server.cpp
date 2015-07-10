@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
     google::InstallFailureSignalHandler();
     FLAGS_logtostderr = false;
 
-    ros::init(argc, argv, "caffe_classifier");
+    ros::init(argc, argv, "caffe_classification_server");
 
     boost::shared_ptr<Classifier> classifier;
     classifier.reset(new Classifier(proto_path, model_path, synset_file));

@@ -48,25 +48,27 @@ include_directories(
 ## sample cpp classification ##
 ###############################
 link_directories(${Caffe_LIBS})
-add_executable(test_classifier src/main.cpp)
-add_dependencies(test_classifier caffe_classifier_generate_messages_cpp)
-target_link_libraries(test_classifier
+add_executable(caffe_classification src/caffe_classification.cpp)
+add_dependencies(caffe_classification caffe_classifier_generate_messages_cpp)
+target_link_libraries(caffe_classification
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
   ${CUDA_LIBS}
   caffe
+  glog
+  gflags
 )
 
 ###############################
 ##   caffe classifier node   ##
 ###############################
 link_directories(${Caffe_LIBS})
-add_executable(caffe_classifier
-  src/caffe_classifier.cpp
+add_executable(caffe_classification_server
+  src/caffe_classification_server.cpp
   src/Classifier.cpp
 )
-add_dependencies(caffe_classifier caffe_classifier_generate_messages_cpp)
-target_link_libraries(caffe_classifier
+add_dependencies(caffe_classification_server caffe_classifier_generate_messages_cpp)
+target_link_libraries(caffe_classification_server
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
   ${CUDA_LIBS}
@@ -78,9 +80,9 @@ target_link_libraries(caffe_classifier
 ###############################
 ##   test image publisher    ##
 ###############################
-add_executable(test_publisher src/test_publisher.cpp)
-add_dependencies(test_publisher caffe_classifier_generate_messages_cpp)
-target_link_libraries(test_publisher
+add_executable(test_client src/test_client.cpp)
+add_dependencies(test_client caffe_classifier_generate_messages_cpp)
+target_link_libraries(test_client
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
   glog
