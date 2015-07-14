@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
     CHECK(cap.isOpened()) << "Failed";
 
     cv::Mat image;
-    while(ros::ok()) {
+    while (ros::ok()) {
         cap >> image;
         CHECK(!image.empty()) << "Failed";
 
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
         }
 
         std::cout << "Max value = " << maxval << ", Max index = " << synsets[maxinx] << endl;
-        if (cv::waitKey(10) > 0) break;
     }
+
     return 0;
 }

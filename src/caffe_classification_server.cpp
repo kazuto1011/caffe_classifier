@@ -3,6 +3,7 @@
 //
 
 #include "Classifier.h"
+#include "DemoInterface.h"
 
 const std::string proto_path = "/home/kazuto/catkin_ws/src/caffe_classifier/deploy.prototxt";
 const std::string model_path = "/home/kazuto/caffe/models/bvlc_reference_caffenet/bvlc_reference_caffenet.caffemodel";
@@ -21,6 +22,11 @@ int main(int argc, char **argv) {
 
     boost::shared_ptr<Classifier> classifier;
     classifier.reset(new Classifier(proto_path, model_path, synset_file));
+
+#if 1 //for demo
+    boost::shared_ptr<DemoInterface> interface;
+    interface.reset(new DemoInterface());
+#endif
 
     ros::waitForShutdown();
     return 0;

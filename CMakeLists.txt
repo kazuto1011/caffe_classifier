@@ -10,6 +10,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   sensor_msgs
   cv_bridge
+  image_transport
+  compressed_image_transport
   message_generation
 )
 find_package(OpenCV REQUIRED)
@@ -32,7 +34,7 @@ generate_messages(
 catkin_package(
     INCLUDE_DIRS include
 #  LIBRARIES caffe_classifier
-    CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs cv_bridge message_runtime
+    CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs cv_bridge image_transport compressed_image_transport message_runtime
 #  DEPENDS system_lib
 )
 
@@ -66,6 +68,7 @@ link_directories(${Caffe_LIBS})
 add_executable(caffe_classification_server
   src/caffe_classification_server.cpp
   src/Classifier.cpp
+  src/DemoInterface.cpp #for demo
 )
 add_dependencies(caffe_classification_server caffe_classifier_generate_messages_cpp)
 target_link_libraries(caffe_classification_server

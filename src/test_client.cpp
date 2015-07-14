@@ -10,8 +10,6 @@
 
 using namespace std;
 
-#define CAPTURE 1
-
 int main(int argc, char **argv) {
     google::InitGoogleLogging(argv[0]);
     google::InstallFailureSignalHandler();
@@ -24,20 +22,13 @@ int main(int argc, char **argv) {
 
     cv::Mat img;
 
-#if CAPTURE
-    //cv::VideoCapture cap("http://10.5.5.9:8080/live/amba.m3u8"); // GoPro Wifi
-    cv::VideoCapture cap("/home/kazuto/egocentric_video/read-a-book/2014112913204/1417234804024.avi");
+    cv::VideoCapture cap("0");
     CHECK(cap.isOpened()) << "Failed";
-#else
-    img = cv::imread("/home/kazuto/cat.jpg");
-    CHECK(!img.empty()) << "Failed";
-#endif
 
     while (ros::ok()) {
-#if CAPTURE
         cap >> img;
         CHECK(!img.empty()) << "Failed";
-#endif
+
         caffe_classifier::classify srv;
         srv.request.image = *cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
 
