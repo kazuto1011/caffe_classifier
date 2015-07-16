@@ -44,6 +44,8 @@ private:
     cv::Mat ConvertMsg2Img(const sensor_msgs::ImageConstPtr &image);
 
     void ExtractColor(cv::Mat &hsv_img, cv::Mat &marker_img);
+
+    string ConvertResponse(string srv_label);
 };
 
 #endif //CAFFE_CLASSIFIER_DEMOINTERFACE_H

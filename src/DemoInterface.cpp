@@ -12,10 +12,12 @@
 
 using namespace std;
 #define DELAY 5
+#define SUM_MIN 300
 
 DemoInterface::DemoInterface() : it_(nh_), spinner_(0), draw_(false), delay_(DELAY), video_(true) {
     ROS_INFO_STREAM("DemoInterface Constructor");
     FLAGS_logtostderr = true;
+
     image_transport::TransportHints hints("compressed", ros::TransportHints());
     it_subscriber_ = it_.subscribe("/camera/rgb/image_raw", 1, &DemoInterface::ImgCallBack, this, hints);
     drawer_ = it_.subscribe("/camera/rgb/image_raw", 1, &DemoInterface::DrawCallBack, this, hints);
@@ -45,23 +47,27 @@ DemoInterface::~DemoInterface() {
 void DemoInterface::ImgCallBack(const sensor_msgs::ImageConstPtr &msg) {
     if (raw_img_.empty())
         return;
+
     cv::Rect roi(0, 0, raw_img_.cols, raw_img_.rows);
     cv::Mat marker_img = cv::Mat::zeros(raw_img_.size(), CV_8UC1);
 
+    //一度平滑化した後，HSV色空間に変換
     cv::Mat hsv_img;
     cv::medianBlur(raw_img_, hsv_img, 13);
     cv::cvtColor(hsv_img, hsv_img, CV_BGR2HSV);
 
+    //黄色の領域を抽出
     ExtractColor(hsv_img, marker_img);
 
+    //ラベリング
     cv::Mat label(raw_img_.size(), CV_16SC1);
     LabelingBS labeling;
     labeling.Exec(marker_img.data, (short *) label.data, raw_img_.cols, raw_img_.rows, false, 0);
 
-    cv::Mat outimg(raw_img_.size(), CV_8UC3, cv::Scalar(0, 0, 0));
-
+    cv::Mat out_img(raw_img_.size(), CV_8UC3, cv::Scalar(0, 0, 0));
     int num_regions = labeling.GetNumOfRegions();
 
+    //ラベリング数が2以上，10未満の時
     if (num_regions > 1 && num_regions < 10) {
         cv::Point point[2];
         cv::Point max_pt[2] = {};
@@ -69,6 +75,7 @@ void DemoInterface::ImgCallBack(const sensor_msgs::ImageConstPtr &msg) {
         int max_sum[2] = {};
         int num_pt = 0;
 
+        //面積最大の要素を2つ計算する
         for (int i = 0; i < num_regions; i++) {
             int sum = 0;
             cv::Point pt(0, 0);
@@ -90,7 +97,7 @@ void DemoInterface::ImgCallBack(const sensor_msgs::ImageConstPtr &msg) {
                 if (sum > max_sum[j]) {
                     if (pt.x == 0 && pt.y == 0)
                         break;
-                    else if (sum < 300)
+                    else if (sum < SUM_MIN)
                         break;
                     for (int n = 1; n > j; n--) {
                         max_idx[n] = max_idx[n - 1];
@@ -111,7 +118,6 @@ void DemoInterface::ImgCallBack(const sensor_msgs::ImageConstPtr &msg) {
 
         for (int i = 0; i < 2; i++) {
             int sum = max_sum[i];
-            LOG(INFO) << "sum: " << sum;
             int idx = max_idx[i];
             point[i] = max_pt[i];
 
@@ -122,17 +128,19 @@ void DemoInterface::ImgCallBack(const sensor_msgs::ImageConstPtr &msg) {
             if (sum > 0) {
                 point[i].x /= sum;
                 point[i].y /= sum;
-                color.copyTo(outimg, labelarea);
-                cv::circle(outimg, point[i], 20, cv::Scalar(0, 200, 0), 8, 8);
+                color.copyTo(out_img, labelarea);
+                cv::circle(out_img, point[i], 20, cv::Scalar(0, 200, 0), 8, 8);
             }
         }
 
+        //指定領域の行列のサイズと中点
         int row_diff = abs(point[0].y - point[1].y);
         int col_diff = abs(point[0].x - point[1].x);
         int row_center = (point[0].y + point[1].y) / 2;
         int col_center = (point[0].x + point[1].x) / 2;
         int length = 0;
 
+        //縦幅と横幅の大きい方を正方形の一辺に取る
         if (row_diff > col_diff)
             length = row_diff;
         else
@@ -143,10 +151,7 @@ void DemoInterface::ImgCallBack(const sensor_msgs::ImageConstPtr &msg) {
         roi.width = length;
         roi.height = length;
 
-        LOG(INFO) << raw_img_.cols << " " << raw_img_.rows;
-        LOG(INFO) << roi.x + roi.width << " " << roi.y + roi.height;
-        LOG(INFO) << roi.x << " " << roi.y << " " << roi.width << " " << roi.height;
-
+        //境界付近の処理
         if (roi.x + roi.width > raw_img_.cols)
             roi.width = raw_img_.cols - roi.x;
         if (roi.y + roi.height > raw_img_.rows)
@@ -160,51 +165,19 @@ void DemoInterface::ImgCallBack(const sensor_msgs::ImageConstPtr &msg) {
             roi.y = 0;
         }
 
-        LOG(INFO) << roi.x << " " << roi.y << " " << roi.width << " " << roi.height;
         if (roi.x || roi.y || roi.width || roi.height) {
             point_rec_1_ = cv::Point(col_center - length / 2, row_center - length / 2);
             point_rec_2_ = cv::Point(col_center + length / 2, row_center + length / 2);
 
-            cv::Mat cropped_img = raw_img_(roi);
+            //受信画像の指定領域をROSメッセージにセット
             caffe_classifier::classify srv;
-            srv.request.image = *cv_bridge::CvImage(std_msgs::Header(), "bgr8", cropped_img).toImageMsg();
+            srv.request.image = *cv_bridge::CvImage(std_msgs::Header(), "bgr8", raw_img_(roi)).toImageMsg();
 
+            //Caffeサーバを呼び出す
             CHECK(client_.call(srv)) << "Failed to call service";
 
-            vector<string> elems;
-            string item;
-            string response = srv.response.label;
-            char delim = ',';
-            for (char ch: response) {
-                if (ch == delim) {
-                    if (!item.empty())
-                        elems.push_back(item);
-                    item.clear();
-                }
-                else {
-                    item += ch;
-                }
-            }
-            if (!item.empty())
-                elems.push_back(item);
-            response = elems[0];
-            elems.clear();
-            delim = ' ';
-            for (char ch: response) {
-                if (ch == delim) {
-                    if (!item.empty()) {
-                        elems.push_back(item);
-                        delim = '\0';
-                    }
-                    item.clear();
-                }
-                else {
-                    item += ch;
-                }
-            }
-            if (!item.empty())
-                elems.push_back(item);
-            result_ = elems[1];
+            //返ってきた結果を整形
+            result_ = ConvertResponse(srv.response.label);
             point_ = cv::Point(roi.x, roi.y - 20);
             draw_ = true;
             delay_ = DELAY;
@@ -216,7 +189,8 @@ void DemoInterface::ImgCallBack(const sensor_msgs::ImageConstPtr &msg) {
             delay_ = DELAY;
         }
     }
-    cv::imshow("Yellow", outimg);
+
+    cv::imshow("Yellow", out_img);
     cv::imshow("Marker", marker_img);
 }
 
@@ -250,8 +224,10 @@ void DemoInterface::ExtractColor(cv::Mat &hsv_img, cv::Mat &marker_img) {
 }
 
 void DemoInterface::DrawCallBack(const sensor_msgs::ImageConstPtr &msg) {
+    //受信画像をcv::Matに変換
     raw_img_ = this->ConvertMsg2Img(msg);
 
+    //最初の一回のみ
     if (video_) {
         writer_.open("/home/kazuto/Desktop/videofile.avi", CV_FOURCC_DEFAULT, 30.0, raw_img_.size());
         if (!writer_.isOpened()) {
@@ -261,13 +237,53 @@ void DemoInterface::DrawCallBack(const sensor_msgs::ImageConstPtr &msg) {
         video_ = false;
     }
 
+    //画像に対する識別結果と指定窓の重畳表示
     if (draw_) {
         cv::putText(raw_img_, result_, point_, cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 200, 0),
                     2, CV_AA);
         cv::rectangle(raw_img_, point_rec_1_, point_rec_2_, cv::Scalar(0, 200, 0), 3, 4);
     }
+
     if (!raw_img_.empty()) {
         cv::imshow("Xtion", raw_img_);
         writer_ << raw_img_;
     }
+}
+
+string DemoInterface::ConvertResponse(string srv_label) {
+    vector<string> elems;
+    string item, response = srv_label;
+    char delim = ',';
+    for (char ch: response) {
+        if (ch == delim) {
+            if (!item.empty())
+                elems.push_back(item);
+            item.clear();
+        }
+        else
+            item += ch;
+    }
+
+    if (!item.empty())
+        elems.push_back(item);
+
+    response = elems[0];
+    elems.clear();
+    delim = ' ';
+    for (char ch: response) {
+        if (ch == delim) {
+            if (!item.empty()) {
+                elems.push_back(item);
+                delim = '\0';
+            }
+            item.clear();
+        }
+        else
+            item += ch;
+    }
+
+    if (!item.empty())
+        elems.push_back(item);
+
+    return elems[1];
 }
