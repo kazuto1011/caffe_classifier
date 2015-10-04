@@ -23,7 +23,8 @@ DemoInterface::DemoInterface() : it_(nh_), spinner_(0), draw_(false), delay_(DEL
     drawer_ = it_.subscribe("/camera/rgb/image_raw", 1, &DemoInterface::DrawCallBack, this, hints);
     client_ = nh_.serviceClient<caffe_classifier::classify>("caffe");
 
-    cv::namedWindow("Xtion");
+    cv::namedWindow("Raw");
+    cv::namedWindow("Output");
     cv::namedWindow("Marker");
     cv::namedWindow("Yellow");
     cv::startWindowThread();
@@ -190,6 +191,7 @@ void DemoInterface::ImgCallBack(const sensor_msgs::ImageConstPtr &msg) {
         }
     }
 
+    cv::rectangle(out_img, point_rec_1_, point_rec_2_, cv::Scalar(0, 200, 0), 3, 4);
     cv::imshow("Yellow", out_img);
     cv::imshow("Marker", marker_img);
 }
@@ -223,32 +225,6 @@ void DemoInterface::ExtractColor(cv::Mat &hsv_img, cv::Mat &marker_img) {
     }
 }
 
-void DemoInterface::DrawCallBack(const sensor_msgs::ImageConstPtr &msg) {
-    //受信画像をcv::Matに変換
-    raw_img_ = this->ConvertMsg2Img(msg);
-
-    //最初の一回のみ
-    if (video_) {
-        writer_.open("/home/kazuto/Desktop/videofile.avi", CV_FOURCC_DEFAULT, 30.0, raw_img_.size());
-        if (!writer_.isOpened()) {
-            LOG(INFO) << "not opend";
-            throw;
-        }
-        video_ = false;
-    }
-
-    //画像に対する識別結果と指定窓の重畳表示
-    if (draw_) {
-        cv::putText(raw_img_, result_, point_, cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 200, 0),
-                    2, CV_AA);
-        cv::rectangle(raw_img_, point_rec_1_, point_rec_2_, cv::Scalar(0, 200, 0), 3, 4);
-    }
-
-    if (!raw_img_.empty()) {
-        cv::imshow("Xtion", raw_img_);
-        writer_ << raw_img_;
-    }
-}
 
 string DemoInterface::ConvertResponse(string srv_label) {
     vector<string> elems;
@@ -287,3 +263,32 @@ string DemoInterface::ConvertResponse(string srv_label) {
 
     return elems[1];
 }
+
+void DemoInterface::DrawCallBack(const sensor_msgs::ImageConstPtr &msg) {
+    //受信画像をcv::Matに変換
+    raw_img_ = this->ConvertMsg2Img(msg);
+    cv::Mat test = this->ConvertMsg2Img(msg);
+    //最初の一回のみ
+    if (video_) {
+        writer_.open("/home/kazuto/Desktop/videofile.avi", CV_FOURCC_DEFAULT, 30.0, raw_img_.size());
+        if (!writer_.isOpened()) {
+            LOG(INFO) << "not opend";
+            throw;
+        }
+        video_ = false;
+    }
+
+    //画像に対する識別結果と指定窓の重畳表示
+    if (draw_) {
+        cv::putText(raw_img_, result_, point_, cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 200, 0),
+                    2, CV_AA);
+        cv::rectangle(raw_img_, point_rec_1_, point_rec_2_, cv::Scalar(0, 200, 0), 3, 4);
+    }
+
+    if (!raw_img_.empty()) {
+        cv::imshow("Output", raw_img_);
+        writer_ << raw_img_;
+        cv::imshow("Raw", test);
+    }
+}
+
