@@ -32,14 +32,13 @@ generate_messages(
 )
 
 catkin_package(
-    INCLUDE_DIRS include
+#    INCLUDE_DIRS include
 #  LIBRARIES caffe_classifier
     CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs cv_bridge image_transport compressed_image_transport message_runtime
 #  DEPENDS system_lib
 )
 
 include_directories(
-  include
   ${catkin_INCLUDE_DIRS}
   ${Caffe_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
