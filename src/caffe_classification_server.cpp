@@ -5,7 +5,7 @@
 #include "Classifier.h"
 #include "DemoInterface.h"
 
-const std::string proto_path = "/home/kazuto/catkin_ws/src/caffe_classifier/deploy.prototxt";
+const std::string proto_path = "/home/kazuto/catkin_ws/src/pinch_classifier/deploy.prototxt";
 const std::string model_path = "/home/kazuto/caffe/models/bvlc_reference_caffenet/bvlc_reference_caffenet.caffemodel";
 const std::string synset_file = "/home/kazuto/caffe/data/ilsvrc12/synset_words.txt";
 

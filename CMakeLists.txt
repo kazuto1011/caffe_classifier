@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(caffe_classifier)
+project(pinch_classifier)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 #add_definitions(-DCPU_ONLY=1)
@@ -33,7 +33,7 @@ generate_messages(
 
 catkin_package(
 #    INCLUDE_DIRS include
-#  LIBRARIES caffe_classifier
+#  LIBRARIES pinch_classifier
     CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs cv_bridge image_transport compressed_image_transport message_runtime
 #  DEPENDS system_lib
 )
@@ -50,7 +50,7 @@ include_directories(
 ###############################
 link_directories(${Caffe_LIBS})
 add_executable(caffe_classification src/caffe_classification.cpp)
-add_dependencies(caffe_classification caffe_classifier_generate_messages_cpp)
+add_dependencies(caffe_classification pinch_classifier_generate_messages_cpp)
 target_link_libraries(caffe_classification
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
@@ -69,7 +69,7 @@ add_executable(caffe_classification_server
   src/Classifier.cpp
   src/DemoInterface.cpp #for demo
 )
-add_dependencies(caffe_classification_server caffe_classifier_generate_messages_cpp)
+add_dependencies(caffe_classification_server pinch_classifier_generate_messages_cpp)
 target_link_libraries(caffe_classification_server
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
@@ -83,7 +83,7 @@ target_link_libraries(caffe_classification_server
 ##   test image publisher    ##
 ###############################
 add_executable(test_client src/test_client.cpp)
-add_dependencies(test_client caffe_classifier_generate_messages_cpp)
+add_dependencies(test_client pinch_classifier_generate_messages_cpp)
 target_link_libraries(test_client
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}

@@ -6,7 +6,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <glog/logging.h>
-#include <caffe_classifier/classify.h>
+#include <pinch_classifier/classify.h>
 #include "DemoInterface.h"
 #include "Labeling.h"
 
@@ -21,7 +21,7 @@ DemoInterface::DemoInterface() : it_(nh_), spinner_(0), draw_(false), delay_(DEL
     image_transport::TransportHints hints("compressed", ros::TransportHints());
     it_subscriber_ = it_.subscribe("/camera/rgb/image_raw", 1, &DemoInterface::ImgCallBack, this, hints);
     drawer_ = it_.subscribe("/camera/rgb/image_raw", 1, &DemoInterface::DrawCallBack, this, hints);
-    client_ = nh_.serviceClient<caffe_classifier::classify>("caffe");
+    client_ = nh_.serviceClient<pinch_classifier::classify>("caffe");
 
     cv::namedWindow("Raw");
     cv::namedWindow("Output");
@@ -171,7 +171,7 @@ void DemoInterface::ImgCallBack(const sensor_msgs::ImageConstPtr &msg) {
             point_rec_2_ = cv::Point(col_center + length / 2, row_center + length / 2);
 
             //受信画像の指定領域をROSメッセージにセット
-            caffe_classifier::classify srv;
+            pinch_classifier::classify srv;
             srv.request.image = *cv_bridge::CvImage(std_msgs::Header(), "bgr8", raw_img_(roi)).toImageMsg();
 
             //Caffeサーバを呼び出す

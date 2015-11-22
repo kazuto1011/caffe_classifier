@@ -2,13 +2,13 @@
 // Created by kazuto on 15/06/29.
 //
 
-#ifndef CAFFE_CLASSIFIER_CLASSIFIER_H
-#define CAFFE_CLASSIFIER_CLASSIFIER_H
+#ifndef PINCH_CLASSIFIER_CLASSIFIER_H
+#define PINCH_CLASSIFIER_CLASSIFIER_H
 
 #include <ros/ros.h>
 #include <ros/service_server.h>
 #include <cv_bridge/cv_bridge.h>
-#include <caffe_classifier/classify.h>
+#include <pinch_classifier/classify.h>
 #include <caffe/caffe.hpp>
 #include <glog/logging.h>
 #include <gflags/gflags.h>
@@ -31,8 +31,8 @@ public:
     ~Classifier() { };
 
 private:
-    bool Classify(caffe_classifier::classify::Request &req,
-                  caffe_classifier::classify::Response &res);
+    bool Classify(pinch_classifier::classify::Request &req,
+                  pinch_classifier::classify::Response &res);
 
     bool InitSynsets(string synsets_path);
 
@@ -42,4 +42,4 @@ private:
 
 };
 
-#endif //CAFFE_CLASSIFIER_CLASSIFIER_H
+#endif //PINCH_CLASSIFIER_CLASSIFIER_H

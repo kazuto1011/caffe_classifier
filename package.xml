@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-    <name>caffe_classifier</name>
+    <name>pinch_classifier</name>
     <version>0.0.0</version>
-    <description>The caffe_classifier package</description>
+    <description>The pinch_classifier package</description>
     <maintainer email="k_nakashima@irvs.ait.kyushu-u.ac.jp">Kazuto Nakashima</maintainer>
     <license>TODO</license>
 

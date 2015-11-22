@@ -21,8 +21,8 @@ Classifier::Classifier(string proto_path, string model_path, string synsets_path
     spinner_.start();
 };
 
-bool Classifier::Classify(caffe_classifier::classify::Request &req,
-                          caffe_classifier::classify::Response &res) {
+bool Classifier::Classify(pinch_classifier::classify::Request &req,
+                          pinch_classifier::classify::Response &res) {
 
     cv::Mat image = ConvertMsg2Img(req.image)->image;
     cv::resize(image, image, cv::Size(256, 256));

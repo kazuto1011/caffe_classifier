@@ -8,8 +8,8 @@
 
 using namespace std;
 
-const std::string proto_path = "/home/kazuto/catkin_ws/src/caffe_classifier/deploy.prototxt";
-const std::string model_path = "/home/kazuto/catkin_ws/src/caffe_classifier/bvlc_reference_caffenet.caffemodel";
+const std::string proto_path = "/home/kazuto/catkin_ws/src/pinch_classifier/deploy.prototxt";
+const std::string model_path = "/home/kazuto/catkin_ws/src/pinch_classifier/bvlc_reference_caffenet.caffemodel";
 const std::string synset_file = "/home/kazuto/caffe/data/ilsvrc12/synset_words.txt";
 
 bool initLabels(vector < string > &labels) {
@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
     	std::cout<<"CPU_ONLY" << std::endl;
         caffe::Caffe::set_mode(caffe::Caffe::CPU);
 #endif
-    ros::init(argc, argv, "caffe_classifier");
+    ros::init(argc, argv, "pinch_classifier");
 
     vector <string> synsets;
     initLabels(synsets);

@@ -2,8 +2,8 @@
 // Created by kazuto on 15/07/13.
 //
 
-#ifndef CAFFE_CLASSIFIER_DEMOINTERFACE_H
-#define CAFFE_CLASSIFIER_DEMOINTERFACE_H
+#ifndef PINCH_CLASSIFIER_DEMOINTERFACE_H
+#define PINCH_CLASSIFIER_DEMOINTERFACE_H
 
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
@@ -48,4 +48,4 @@ private:
     string ConvertResponse(string srv_label);
 };
 
-#endif //CAFFE_CLASSIFIER_DEMOINTERFACE_H
+#endif //PINCH_CLASSIFIER_DEMOINTERFACE_H

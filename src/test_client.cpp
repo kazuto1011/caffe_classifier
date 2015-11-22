@@ -3,7 +3,7 @@
 //
 
 #include <ros/ros.h>
-#include <caffe_classifier/classify.h>
+#include <pinch_classifier/classify.h>
 #include <opencv2/highgui/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <glog/logging.h>
@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "test_client");
 
     ros::NodeHandle nh;
-    ros::ServiceClient client = nh.serviceClient<caffe_classifier::classify>("caffe");
+    ros::ServiceClient client = nh.serviceClient<pinch_classifier::classify>("caffe");
 
     cv::Mat img;
 
@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
         cap >> img;
         CHECK(!img.empty()) << "Failed";
 
-        caffe_classifier::classify srv;
+        pinch_classifier::classify srv;
         srv.request.image = *cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
 
         CHECK(client.call(srv)) << "Failed to call service";
